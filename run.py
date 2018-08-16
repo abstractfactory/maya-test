@@ -31,7 +31,11 @@ def new():
 
 @with_setup(new)
 def test_bug():
-    """Ensure the bug occurs"""
+    """Test bug
+
+    Ensure that the bug occurs
+
+    """
 
     assert_equals(cmds.getAttr(a + ".rx"), 0.0)
     assert_equals(cmds.getAttr(a + ".rx", time=1), 0.0)
@@ -47,7 +51,35 @@ def test_bug():
 
 @with_setup(new)
 def test_workaround():
-    """Workaround the issue by querying each attribute twice"""
+    """Test workaround
+
+    Workaround the issue by querying each attribute twice
+
+    """
+
+    def getAttr(attr, time):
+        cmds.getAttr(attr, time=time - 1)
+        return cmds.getAttr(attr, time=time)
+
+    assert_equals(cmds.getAttr(a + ".rx"), 0.0)
+    assert_equals(cmds.getAttr(a + ".rx", time=1), 0.0)
+
+    # Move handle
+    cmds.move(0, 15, -10, "|ikHandle1")
+
+    assert_equals(round(cmds.getAttr(a + ".rx"), 0), -14.0)
+    assert_equals(round(getAttr(a + ".rx", time=1), 0), -14.0)
+
+
+@with_setup(new)
+def test_optimisation():
+    """Test optimisation
+
+    If the cause of the bug is ikHandle, then once an attribute has
+    been called twice and triggered the evaluation of ikHandle, the
+    next dependent node can be called just once.
+
+    """
 
     def getAttr(attr, time):
         cmds.getAttr(attr, time=time - 1)
@@ -69,4 +101,6 @@ def test_workaround():
 
     cmds.move(0, 15, -15, "|ikHandle1")
 
+    # Once out-of-date again, the workaround must be applied
+    assert_not_equals(round(cmds.getAttr(a + ".rx", time=1), 0), -4.0)
     assert_equals(round(getAttr(a + ".rx", time=1), 0), -4.0)
