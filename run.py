@@ -1,10 +1,14 @@
 from nose.tools import with_setup, assert_equals, assert_not_equals
 from maya import standalone, cmds
-standalone.initialize()
 
 a = "Root"
 b = "Mid"
 c = "Tip"
+
+
+def setup():
+    """Called automatically on start-up"""
+    standalone.initialize()
 
 
 def new():
@@ -26,7 +30,9 @@ def new():
 
 
 @with_setup(new)
-def test1():
+def test_bug():
+    """Ensure the bug occurs"""
+
     assert_equals(cmds.getAttr(a + ".rx"), 0.0)
     assert_equals(cmds.getAttr(a + ".rx", time=1), 0.0)
 
@@ -40,7 +46,9 @@ def test1():
 
 
 @with_setup(new)
-def test2():
+def test_workaround():
+    """Workaround the issue by querying each attribute twice"""
+
     def getAttr(attr, time):
         cmds.getAttr(attr, time=time - 1)
         return cmds.getAttr(attr, time=time)
