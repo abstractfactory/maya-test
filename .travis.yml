@@ -43,4 +43,4 @@ script:
     -v $(pwd):/repo
     --workdir=/repo
     --entrypoint mayapy
-    mottosso/maya:${VERSION} -m nose --verbose run.py
+    mottosso/maya:${VERSION} -m nose.__main__ --verbose run.py
